@@ -159,12 +159,12 @@ var OratorSessionRemoteAuth = function()
 		{
 			var tmpBody = pRequest.body;
 			
-			if (tmpBody['Username'] &&
+			if (tmpBody['UserName'] &&
 				tmpBody['Password'])
 			{
 				pRequest.Credentials = (
 				{
-					username: tmpBody.Username,
+					username: tmpBody.UserName,
 					password: tmpBody.Password
 				});
 
@@ -187,7 +187,7 @@ var OratorSessionRemoteAuth = function()
 						}
 						else
 						{
-							pResponse.end(JSON.stringify(authResponse));
+							pResponse.send(authResponse);
 						}
 						fNext();
 					}
@@ -210,6 +210,7 @@ var OratorSessionRemoteAuth = function()
 			connectRoutes: connectRoutes,
 			setPostRedirectUrl: setPostRedirectUrl,
 			checkIfLoggedIn: libSession.checkIfLoggedIn,
+			checkSession: libSession.checkSession,
 			new: createNew
 		});
 

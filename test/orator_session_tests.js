@@ -19,7 +19,7 @@ var _MockSettings = (
 	APIServerPort: 8080,
 	"SessionTimeout":60,
 	"MemcachedURL":"127.0.0.1:11211",
-	"TestUsername": "testuser",
+	"TestUserName": "testuser",
 	"TestPassword": "testpassword",
 	"ConfigFile":__dirname+"/../Orator-Config.json"
 });
@@ -83,7 +83,6 @@ suite
 					{
 						_OratorSessionHttpAuth = require('../source/orator-session-remoteauth').new(_Orator);
 						_OratorSessionHttpAuth.connectRoutes(_Orator.webServer);
-						_OratorSessionHttpAuth.setPostRedirectUrl('http://somehwhere');
 
 						//setup a route to use for testing
 						_Orator.webServer.get(
@@ -140,7 +139,7 @@ suite
 					{
 						libSuperTest
 								.get('TEST')
-								.auth(_Orator.settings.TestUsername, _Orator.settings.TestPassword)
+								.auth(_Orator.settings.TestUserName, _Orator.settings.TestPassword)
 								.end(
 									function (pError, pResponse)
 									{
@@ -158,7 +157,7 @@ suite
 					{
 						var postBody =
 						{
-							Username: _Orator.settings.TestUsername,
+							UserName: _Orator.settings.TestUserName,
 							Password: _Orator.settings.TestPassword
 						};
 						libSuperTest
@@ -167,8 +166,12 @@ suite
 								.end(
 									function (pError, pResponse)
 									{
-										Expect(pResponse.statusCode)
-											.to.equal(302);
+										var tmpAuthToken = pResponse.body;
+
+										Expect(tmpAuthToken)
+											.to.have.property('UserRole');
+										Expect(tmpAuthToken.LoggedIn)
+											.to.equal(true);
 										fDone();
 									}
 								);
@@ -179,9 +182,12 @@ suite
 					'Send auth by HTTP-POST FORM request, should be authorized',
 					function(fDone)
 					{
+						//have post-authenticator redirect instead of sending back auth token
+						_OratorSessionHttpAuth.setPostRedirectUrl('http://somehwhere');
+
 						libSuperTest
 								.post('/1.0/Authenticate')
-								.send('Username='+_Orator.settings.TestUsername+'&Password='+_Orator.settings.TestPassword)
+								.send('UserName='+_Orator.settings.TestUserName+'&Password='+_Orator.settings.TestPassword)
 								.end(
 									function (pError, pResponse)
 									{
@@ -204,6 +210,29 @@ suite
 									{
 										Expect(pResponse.statusCode)
 											.to.equal(200);
+										fDone();
+									}
+								);
+					}
+				);
+				test
+				(
+					'Run checkSession',
+					function(fDone)
+					{
+						libSuperTest
+								.get('1.0/CheckSession')
+								.end(
+									function (pError, pResponse)
+									{
+										var tmpAuthToken = pResponse.body;
+
+										Expect(pResponse.statusCode)
+											.to.equal(200);
+										Expect(tmpAuthToken)
+											.to.have.property('UserRole');
+										Expect(tmpAuthToken.LoggedIn)
+											.to.equal(true);
 										fDone();
 									}
 								);
