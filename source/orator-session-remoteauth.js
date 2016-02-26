@@ -43,7 +43,7 @@ var OratorSessionRemoteAuth = function()
 						pRestServer.use(httpAuthenticate);
 						break;
 					case 'POST':
-						pRestServer.post('/1.0/Authenticate', postAuthenticate);
+						pRestServer.post('1.0/Authenticate', postAuthenticate);
 						break;
 					default:
 						_Log.warn('Auth type ' + authType + ' not supported!');
@@ -86,6 +86,10 @@ var OratorSessionRemoteAuth = function()
 						_Log.trace('Remote Orator auth successful', {Action:'Authenticate'});
 						
 						tmpAuthResult = body;
+
+						// When the authenticator returns, the authResult normally inherits the active user's
+						//  session, so we need to pocket this for later.
+						tmpAuthResult.OverrideSessionID = tmpAuthResult.SessionID;
 					}
 					else
 					{
@@ -184,12 +188,29 @@ var OratorSessionRemoteAuth = function()
 						{
 							pResponse.header('Location', postRedirectUrl);
 							pResponse.send(302);
+
+							return fNext();
 						}
 						else
 						{
-							pResponse.send(authResponse);
+							if (authResponse.OverrideSessionID)
+							{
+								authResponse.SessionID = authResponse.OverrideSessionID;
+								//send a new cookie to client to sync it with our local session.
+								// this makes it so we are sharing a session identifier locally and remotely.
+								pRequest.SessionOverrideData = authResponse;
+								libSession.createSession(pRequest, pResponse, function(err)
+								{
+									pResponse.send(authResponse);
+									return fNext();
+								});
+							}
+							else
+							{
+								pResponse.send(authResponse);
+								return fNext();
+							}
 						}
-						fNext();
 					}
 				});
 			}
