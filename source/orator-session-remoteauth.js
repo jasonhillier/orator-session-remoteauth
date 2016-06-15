@@ -44,6 +44,8 @@ var OratorSessionRemoteAuth = function()
 						break;
 					case 'POST':
 						pRestServer.post('1.0/Authenticate', postAuthenticate);
+						if (pFable.webServer) //if an orator web server...
+							pFable.omitProxyRoute('1.0/Authenticate');
 						break;
 					default:
 						_Log.warn('Auth type ' + authType + ' not supported!');
