@@ -1,6 +1,6 @@
 {
   "name": "orator-session-remoteauth",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Orator Remote Authentication Provider",
   "main": "./source/orator-session-remoteauth.js",
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "orator": "^1.0.18",
-    "orator-session": "^1.0.12",
+    "orator-session": "^1.0.24",
     "request": "^2.69.0",
     "restify": "^4.0.3"
   }
