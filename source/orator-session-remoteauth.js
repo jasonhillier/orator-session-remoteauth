@@ -68,6 +68,9 @@ var OratorSessionRemoteAuth = function()
 				body: {
 					UserName: pCredentials.username,
 					Password: pCredentials.password
+				},
+				headers: {
+					'Origin': pCredentials.host
 				}
 			};
 
@@ -171,7 +174,8 @@ var OratorSessionRemoteAuth = function()
 				pRequest.Credentials = (
 				{
 					username: tmpBody.UserName,
-					password: tmpBody.Password
+					password: tmpBody.Password,
+					host: pRequest.headers.host
 				});
 
 				libSession.authenticateUser(pRequest, selectedAuthenticator, function(err, authResponse)
